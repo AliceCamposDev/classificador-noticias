@@ -1,0 +1,24 @@
+Dataset shape: (166288, 4)
+Columns: ['title', 'text', 'category', 'weekday']
+
+Missing Values:
+title       0
+text        0
+category    0
+weekday     0
+dtype: int64
+
+Numeric Summary:
+             title                                               text category   weekday
+count       166288                                             166288   166288    166288
+unique      164082                                             165901       44         7
+top     Astrologia  Toda segunda-feira, "Tec" divulga os mais lega...    poder  Thursday
+freq           431                                                 25    22022     25264
+
+First 5 rows:
+                                               title                                               text   category weekday
+0  Lula diz que está 'lascado', mas que ainda tem...  Com a possibilidade de uma condenação impedir ...      poder  Sunday
+1  'Decidi ser escrava das mulheres que sofrem', ...  Para Oumou Sangaré, cantora e ativista malines...  ilustrada  Sunday
+2  Três reportagens da Folha ganham Prêmio Petrob...  Três reportagens da Folha foram vencedoras do ...      poder  Sunday
+3  Filme 'Star Wars: Os Últimos Jedi' ganha trail...  A Disney divulgou na noite desta segunda-feira...  ilustrada  Sunday
+4  CBSS inicia acordos com fintechs e quer 30% do...  O CBSS, banco da holding Elopar dos sócios Bra...    mercado  Sunday
