@@ -10,13 +10,19 @@ from datetime import datetime
 from tqdm import tqdm
 from nltk.corpus import stopwords
 import spacy
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelEncoder
+from sklearn.feature_extraction.text import TfidfVectorizer
+from gensim.models import KeyedVectors
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import classification_report, accuracy_score
+from sklearn.ensemble import RandomForestClassifier
 
-# ===================== FUNÇÕES DE PROCESSAMENTO (SÃO DEFINIDAS NO ESCOPO PRINCIPAL) =====================
+# ===================== FUNÇÕES DE PROCESSAMENTO =====================
 
-def load_data(filepath: str = "processed_data.csv") -> pd.DataFrame:
+def load_data(filepath: str = "processed_data_crop.csv") -> pd.DataFrame:
     """Carrega os dados tratados a partir de um arquivo CSV."""
     if not os.path.exists(filepath):
-        print("Dados não puderam ser carregados")
         raise FileNotFoundError(f"Arquivo {filepath} não encontrado.")
     df = pd.read_csv(filepath)
     return df
@@ -44,25 +50,18 @@ def gen_report(
             f.write(str_analysis)
         print(f"\nRelatório salvo em {output_file}")
 
-# ===================== FUNÇÕES PARA PROCESSAMENTO EM PARALELO =====================
+# ===================== FUNÇÕES PARA PROCESSAMENTO EM PARALELO (NÃO USADAS AGORA) =====================
 
 def init_worker() -> None:
     global nlp
     nlp = spacy.load('pt_core_news_sm')
 
 def process_chunk(texts_chunk: List[str]) -> List[str]:
-    """
-    Processa um lote de textos: lematiza e remove stopwords/pontuação.
-    Utiliza o modelo spaCy carregado globalmente no worker.
-    """
     global nlp
     results = []
     for text in texts_chunk:
-        # Processa o texto com spaCy
         doc = nlp(text)
-        # Extrai os lemas, ignorando stopwords e pontuação
         tokens = [token.lemma_ for token in doc if not token.is_stop and not token.is_punct]
-        # Junta os tokens em uma string novamente
         results.append(' '.join(tokens))
     return results
 
@@ -71,50 +70,104 @@ def process_in_parallel(
     text_column: str,
     num_processes: Optional[int] = None
 ) -> List[str]:
-    """
-    Aplica lematização e remoção de stopwords em paralelo a uma coluna de texto.
-    Retorna uma lista com os textos processados na mesma ordem do DataFrame.
-    """
     if num_processes is None:
-        num_processes = 10
-    # Garantir que não criamos mais processos que o necessário
+        num_processes = 8
     num_processes = min(num_processes, len(df))
-
-    # Extrai os textos da coluna especificada
     texts = df[text_column].tolist()
-    # Divide em chunks para cada processo
     chunk_size = len(texts) // 5000
     chunks = [texts[i:i + chunk_size] for i in range(0, len(texts), chunk_size)]
-
-    # Cria o pool de processos com o inicializador que carrega o modelo
     with Pool(processes=num_processes, initializer=init_worker) as pool:
-        # Mapeia os chunks para processamento paralelo
         chunk_results = list(tqdm(pool.imap(process_chunk, chunks), total=len(chunks), desc="Processing chunks"))
-        
-    # Achata a lista de listas
     processed_texts = [item for sublist in chunk_results for item in sublist]
     return processed_texts
 
+# ===================== EXECUÇÃO PRINCIPAL =====================
+
 if __name__ == "__main__":
-    print("Carregando dados...")
+    print("Carregando dados...") 
     df = load_data()
-    cols_to_drop= ["text", "texto_completo"]
+
+    # Codificar categorias
+    le = LabelEncoder()
+    df['category_encoded'] = le.fit_transform(df['category'])
     
-    existing_cols: List[str] = [col for col in cols_to_drop if col in df.columns]
+    # Verificar distribuição das classes
+    class_counts = df['category_encoded'].value_counts().sort_index()
+    print("Distribuição original das classes (encoded):")
+    
+    # Filtrar classes com poucas amostras
+    min_samples = 200  # ajuste conforme necessário
+    classes_to_keep = class_counts[class_counts >= min_samples].index
+    # asmais
+    df_filtered = df[df['category_encoded'].isin(classes_to_keep)].copy()
+    low_count_indices  = class_counts[class_counts <= min_samples].index
+    low_count_names = le.inverse_transform(low_count_indices)
+    print(le.inverse_transform(classes_to_keep))
 
-    if existing_cols:
-        df = df.drop(columns=existing_cols)
-        print(f"Colunas removidas: {existing_cols}")
-    else:
-        print("Colunas não encontrada para remoção.")
-    # print("Concatenando título e texto...")
-    # df = concat_txt(df)
+#     # Re-ajustar o encoder para as classes mantidas (opcional, mas evita índices esparsos)
+#     le_filtered = LabelEncoder()
+#     df_filtered['category_encoded'] = le_filtered.fit_transform(df_filtered['category'])
+    
+#     print(f"\nApós filtrar classes com < {min_samples} amostras:")
+#     print(f"Shape original: {df.shape}")
+#     print(f"Shape filtrado: {df_filtered.shape}")
+#     print(f"Classes mantidas: {len(le_filtered.classes_)}")
+    
+#     # Separar features e target
+#     X = df_filtered['texto_processado']
+#     y = df_filtered['category_encoded']
+    
+#     print("Dividindo treino/validação/teste...")
+#     # Divisão treino (80%) / temporário (20%)
+#     X_train_text, X_temp_text, y_train, y_temp = train_test_split(
+#         X, y, test_size=0.2, random_state=42, stratify=y
+#     )
+#     # Dividir temporário em validação (50% de 20% = 10%) e teste (50% de 20% = 10%)
+#     X_val_text, X_test_text, y_val, y_test = train_test_split(
+#         X_temp_text, y_temp, test_size=0.5, random_state=42, stratify=y_temp
+#     )
+    
+#     print(f"Tamanhos: treino={len(X_train_text)}, val={len(X_val_text)}, teste={len(X_test_text)}")
+    
+#     # ========== MODELO COM TF-IDF ==========
+#     print("\nCriando features TF-IDF...")
+#     tfidf = TfidfVectorizer(max_features=7000000, ngram_range=(1,3), min_df=30, max_df=0.7)
+#     with tqdm(total=3, desc="TF-IDF steps") as pbar:
+#         X_train_tfidf = tfidf.fit_transform(X_train_text)
+#         pbar.update(1)
+#         X_val_tfidf = tfidf.transform(X_val_text)
+#         pbar.update(1)
+#         X_test_tfidf = tfidf.transform(X_test_text)
+#         pbar.update(1)
+    
+#     print("Treinando Regressão Logística com TF-IDF...")
+#     clf_tfidf = LogisticRegression(max_iter=10000, solver='lbfgs', random_state=42, verbose=1) #newton-cg lbfgs
+#     clf_tfidf.fit(X_train_tfidf, y_train)
+    
+#     y_val_pred_tfidf = clf_tfidf.predict(X_val_tfidf)
+#     val_acc_tfidf = accuracy_score(y_val, y_val_pred_tfidf)
+#     print(f"Acurácia na validação (TF-IDF): {val_acc_tfidf:.4f}")
+#     print("\nRelatório de Classificação - Validação (TF-IDF):")
+#     print(classification_report(y_val, y_val_pred_tfidf, target_names=le_filtered.classes_))
+    
+#     # Teste
+#     y_test_pred_tfidf = clf_tfidf.predict(X_test_tfidf)
+#     test_acc_tfidf = accuracy_score(y_test, y_test_pred_tfidf)
+#     print(f"Acurácia no teste (TF-IDF): {test_acc_tfidf:.4f}")
+#     import joblib
 
-    # print("Processando textos em paralelo...")
-    # df['texto_processado'] = process_in_parallel(df, 'texto_completo', num_processes=10)
+# # Salvar
+#     joblib.dump(tfidf, 'tfidf_vectorizer.pkl')
+#     joblib.dump(clf_tfidf, 'logistic_model.pkl')
 
-    # print("Gerando relatório...")
-    # gen_report(df, print_report=True)
-
-    df.to_csv("processed_data_crop.csv", index=False)
-    # print("Arquivo 'processed_data.csv' salvo.")
+#     # ========== RANDOM FOREST COM TF-IDF ==========
+#     # print("\nTreinando Random Forest com TF-IDF...")
+#     # rf = RandomForestClassifier(n_estimators=100, n_jobs=-1, random_state=42)
+#     # rf.fit(X_train_tfidf, y_train)
+    
+#     # y_val_pred_rf = rf.predict(X_val_tfidf)
+#     # val_acc_rf = accuracy_score(y_val, y_val_pred_rf)
+#     # print(f"Acurácia na validação (RF): {val_acc_rf:.4f}")
+#     # print("\nRelatório de Classificação - Validação (RF):")
+#     # print(classification_report(y_val, y_val_pred_rf, target_names=le_filtered.classes_))
+#     # ficou  paia com rf

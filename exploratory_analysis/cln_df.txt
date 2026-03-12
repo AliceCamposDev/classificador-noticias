@@ -1,0 +1,23 @@
+Dataset shape: (164457, 3)
+Columns: ['title', 'category', 'texto_processado']
+
+Missing Values:
+title               0
+category            0
+texto_processado    0
+dtype: int64
+
+Numeric Summary:
+             title category        texto_processado
+count       164457   164457                  164457
+unique      162277       24                  164178
+top     Astrologia    poder  aviso colunista férias
+freq           431    22022                      33
+
+First 5 rows:
+                                               title   category                                   texto_processado
+0  Lula diz que está 'lascado', mas que ainda tem...      poder  Lula lascado força cabo eleitoral possibilidad...
+1  'Decidi ser escrava das mulheres que sofrem', ...  ilustrada  decidir escrar mulher sofrer cantora Oumou San...
+2  Três reportagens da Folha ganham Prêmio Petrob...      poder  reportagem folha ganhar Prêmio Petrobras Jorna...
+3  Filme 'Star Wars: Os Últimos Jedi' ganha trail...  ilustrada  filme Star Wars Últimos Jedi ganhar trailer de...
+4  CBSS inicia acordos com fintechs e quer 30% do...    mercado  CBSS iniciar acordo fintechs 30 crédito digita...

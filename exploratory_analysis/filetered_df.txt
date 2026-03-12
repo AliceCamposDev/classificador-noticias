@@ -1,4 +1,4 @@
-Dataset shape: (166288, 4)
+Dataset shape: (164457, 4)
 Columns: ['title', 'text', 'category', 'weekday']
 
 Missing Values:
@@ -10,10 +10,10 @@ dtype: int64
 
 Numeric Summary:
              title                                               text category   weekday
-count       166288                                             166288   166288    166288
-unique      164082                                             165901       44         7
+count       164457                                             164457   164457    164457
+unique      162277                                             164075       24         7
 top     Astrologia  Toda segunda-feira, "Tec" divulga os mais lega...    poder  Thursday
-freq           431                                                 25    22022     25264
+freq           431                                                 25    22022     25091
 
 First 5 rows:
                                                title                                               text   category weekday

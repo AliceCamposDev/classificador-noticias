@@ -1,7 +1,11 @@
 import os
 import sys
 from typing import Any, Dict, List, Optional, Tuple, Union, Literal
-
+from multiprocessing import Pool, cpu_count
+from datetime import datetime
+from tqdm import tqdm
+from nltk.corpus import stopwords
+import spacy
 import kagglehub
 import matplotlib.pyplot as plt
 import numpy as np
@@ -9,10 +13,20 @@ import pandas as pd
 import seaborn as sns
 
 from datetime import datetime
-
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelEncoder
+from sklearn.feature_extraction.text import TfidfVectorizer
+from gensim.models import KeyedVectors
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import classification_report, accuracy_score
+from sklearn.ensemble import RandomForestClassifier
 plt.style.use("ggplot")
 sns.set_style("whitegrid")
 
+def concat_txt(df: pd.DataFrame) -> pd.DataFrame:
+    """Concatena título e texto em uma nova coluna 'texto_completo'."""
+    df['texto_completo'] = df['title'] + ' ' + df['text']
+    return df
 
 def load_and_save_data(
     dataset_slug: str = "marlesson/news-of-the-site-folhauol",
@@ -160,15 +174,24 @@ def main() -> None:
     data_df = load_and_save_data()
     gen_report(data_df, output_file="raw_df.txt", save=False)
 
-    # removendo categorias sem sentido
-    categorias: List[str] = data_df["category"].dropna().unique().tolist()
-    remove_set = set(["2016", "2015","bbc"])
-    mask: pd.Series = pd.Series(True, index=data_df.index)
-    mask &= ~data_df["category"].isin(remove_set)
+    remove_set = set([
+    'banco-de-dados', 'bichos', 'cenarios-2017', 'dw', 'especial',
+    'euronews', 'guia-de-livros-discos-filmes', 'guia-de-livros-filmes-discos',
+    'infograficos', 'mulher', 'multimidia', 'o-melhor-de-sao-paulo',
+    'ombudsman', 'rfi', 'topofmind', 'treinamento', 'treinamentocienciaesaude',
+    'vice', '2016', '2015','asmais','serafina'
+    ])
+
+    # Criar máscara para manter apenas categorias que NÃO estão no remove_set
+    mask = ~data_df["category"].isin(remove_set)
+    df = data_df[mask].copy()
+
+    print(f"Registros após remoção manual: {len(data_df)}")
+    print(f"Categorias restantes: {df['category'].nunique()}")
 
 
     # adcionando dias da semana ao
-    df_with_weekday = add_weekday_column(data_df)
+    df_with_weekday = add_weekday_column(df)
     gen_report(df_with_weekday, output_file="df_with_weekday.txt", save=False)
     
 
@@ -176,6 +199,7 @@ def main() -> None:
     # o link entregaria as categorias pq tem literalmente a categoria nele então não faria sentido a tarefa
     # não vou usar date pra analise, talvez weekday e já extrai essa informação 
     clean_df = clean(df_with_weekday, ["subcategory", "link","date"])
+    
     gen_report(clean_df, output_file="clean_df.txt", save=False)
 
     #filtra as linhas que o texto ou titulo estao faltando
@@ -185,7 +209,43 @@ def main() -> None:
   
     #salva os dados pra um csv
     filetered_df.to_csv("treated_data.csv", index=False)
+    conc_df = concat_txt(filetered_df)
+    conc_df["texto_processado"] = process_in_parallel(conc_df, "texto_completo")
+    cleaner_df = clean(conc_df, ["weekday", "text","texto_completo"])
+    gen_report(cleaner_df, output_file="cln_df.txt", save=True)
+    cleaner_df.to_csv("cleaner_df.csv", index=False)
     
+# ===================== FUNÇÕES PARA PROCESSAMENTO EM PARALELO =====================
+
+    
+def init_worker() -> None:
+    global nlp
+    nlp = spacy.load('pt_core_news_sm')
+
+def process_chunk(texts_chunk: List[str]) -> List[str]:
+    global nlp
+    results = []
+    for text in texts_chunk:
+        doc = nlp(text)
+        tokens = [token.lemma_ for token in doc if not token.is_stop and not token.is_punct]
+        results.append(' '.join(tokens))
+    return results
+
+def process_in_parallel(
+    df: pd.DataFrame,
+    text_column: str,
+    num_processes: Optional[int] = None
+) -> List[str]:
+    if num_processes is None:
+        num_processes = 16
+    num_processes = min(num_processes, len(df))
+    texts = df[text_column].tolist()
+    chunk_size = len(texts) // 100
+    chunks = [texts[i:i + chunk_size] for i in range(0, len(texts), chunk_size)]
+    with Pool(processes=num_processes, initializer=init_worker) as pool:
+        chunk_results = list(tqdm(pool.imap(process_chunk, chunks), total=len(chunks), desc="Processing chunks"))
+    processed_texts = [item for sublist in chunk_results for item in sublist]
+    return processed_texts
 
 if __name__ == "__main__":
     main()
