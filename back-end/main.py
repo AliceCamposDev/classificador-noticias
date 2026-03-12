@@ -73,7 +73,7 @@ app = FastAPI(
 )
 app.add_middleware(
     CORSMiddleware,
-    allow_origin_regex=r"https://.*alice-campos-projects\.vercel\.app",
+    allow_origins=["https://classificador-noticias-front.vercel.app"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
