@@ -2,10 +2,7 @@
   "builds": [
     {
       "src": "main.py",
-      "use": "@vercel/python",
-      "config": {
-        "installCommand": "pip install -r requirements.txt && python -m spacy download pt_core_news_"
-      }
+      "use": "@vercel/python"
     }
   ],
   "routes": [
