@@ -2,7 +2,7 @@ from fastapi import FastAPI, HTTPException, status
 from contextlib import asynccontextmanager
 import logging
 from typing import AsyncGenerator, Any, Dict, List
-import spacy
+# import spacy
 from src.schemas import TextRequest, PredictionResponse
 from src.model import load_models, predict_text
 from fastapi.middleware.cors import CORSMiddleware
@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 tfidf_vectorizer = Any
 classifier_model = Any
 CLASS_NAMES = Any  # se você tiver nomes de classes, preencha aqui
-nlp = None
+# nlp = None
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> Any:
@@ -26,8 +26,8 @@ async def lifespan(app: FastAPI) -> Any:
     """
     global tfidf_vectorizer, classifier_model
     logger.info("Carregando modelos...")
-    global nlp
-    nlp = spacy.load('pt_core_news_sm')
+    # global nlp
+    # nlp = spacy.load('pt_core_news_sm')
     try:
         tfidf_vectorizer, classifier_model = load_models()
 
