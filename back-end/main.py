@@ -2,7 +2,7 @@ from fastapi import FastAPI, HTTPException, status
 from contextlib import asynccontextmanager
 import logging
 from typing import AsyncGenerator, Any, Dict, List
-# import spacy
+import spacy
 from src.schemas import TextRequest, PredictionResponse
 from src.model import load_models, predict_text
 from fastapi.middleware.cors import CORSMiddleware
@@ -87,68 +87,68 @@ async def root() -> Dict[str, str]:
     return {"message": "API de Classificação de Texto. Use POST /predict"}
 
 
-# @app.post("/classify", response_model=PredictionResponse)
-# async def predict(request: TextRequest) -> PredictionResponse:
-#     """
-#     Endpoint para classificar um texto.
+@app.post("/classify", response_model=PredictionResponse)
+async def predict(request: TextRequest) -> PredictionResponse:
+    """
+    Endpoint para classificar um texto.
 
-#     - **text**: string com o texto a ser classificado.
-#     """
-#     global tfidf_vectorizer, classifier_model, CLASS_NAMES
+    - **text**: string com o texto a ser classificado.
+    """
+    global tfidf_vectorizer, classifier_model, CLASS_NAMES
 
-#     # Verifica se os modelos foram carregados
-#     if tfidf_vectorizer is None or classifier_model is None:
-#         logger.error("Modelos não carregados.")
-#         raise HTTPException(
-#             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-#             detail="Modelos não disponíveis no momento. Tente novamente mais tarde.",
-#         )
-#     text = request.text
-#     doc = nlp(text)
-#     tokens = [token.lemma_ for token in doc if not token.is_stop and not token.is_punct]
-#     text = ' '.join(tokens)
+    # Verifica se os modelos foram carregados
+    if tfidf_vectorizer is None or classifier_model is None:
+        logger.error("Modelos não carregados.")
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Modelos não disponíveis no momento. Tente novamente mais tarde.",
+        )
+    text = request.text
+    # doc = nlp(text)
+    # tokens = [token.lemma_ for token in doc if not token.is_stop and not token.is_punct]
+    # text = ' '.join(tokens)
 
-#     try:
-#         predicted_class, probabilities, _ = predict_text(
-#             text=text,
-#             tfidf_vectorizer=tfidf_vectorizer,
-#             classifier=classifier_model,
-#             class_names=CLASS_NAMES,
-#         )
-#     except Exception as e:
-#         logger.exception("Erro durante a predição")
-#         raise HTTPException(
-#             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-#             detail=f"Erro interno durante a classificação: {str(e)}",
-#         )
+    try:
+        predicted_class, probabilities, _ = predict_text(
+            text=text,
+            tfidf_vectorizer=tfidf_vectorizer,
+            classifier=classifier_model,
+            class_names=CLASS_NAMES,
+        )
+    except Exception as e:
+        logger.exception("Erro durante a predição")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Erro interno durante a classificação: {str(e)}",
+        )
 
-#     return PredictionResponse(
-#         predicted_class=predicted_class,
-#         probabilities=probabilities,
-#         class_names=[
-#             "ambiente",
-#             "bbc",
-#             "ciencia",
-#             "colunas",
-#             "comida",
-#             "cotidiano",
-#             "educacao",
-#             "empreendedorsocial",
-#             "equilibrioesaude",
-#             "esporte",
-#             "folhinha",
-#             "ilustrada",
-#             "ilustrissima",
-#             "mercado",
-#             "mundo",
-#             "opiniao",
-#             "paineldoleitor",
-#             "poder",
-#             "saopaulo",
-#             "seminariosfolha",
-#             "sobretudo",
-#             "tec",
-#             "turismo",
-#             "tv",
-#         ],
-#     )
+    return PredictionResponse(
+        predicted_class=predicted_class,
+        probabilities=probabilities,
+        class_names=[
+            "ambiente",
+            "bbc",
+            "ciencia",
+            "colunas",
+            "comida",
+            "cotidiano",
+            "educacao",
+            "empreendedorsocial",
+            "equilibrioesaude",
+            "esporte",
+            "folhinha",
+            "ilustrada",
+            "ilustrissima",
+            "mercado",
+            "mundo",
+            "opiniao",
+            "paineldoleitor",
+            "poder",
+            "saopaulo",
+            "seminariosfolha",
+            "sobretudo",
+            "tec",
+            "turismo",
+            "tv",
+        ],
+    )
