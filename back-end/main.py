@@ -79,9 +79,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-@app.options("/{path:path}")
-async def options_handler():
-    return {}
+@app.options("/{full_path:path}")
+async def options_handler(full_path: str):
+    return Response(status_code=200)
+
 @app.get("/")
 async def root() -> Dict[str, str]:
     """Endpoint de saudação."""
