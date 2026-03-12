@@ -1,3 +1,5 @@
 uvicorn
 fastapi
 joblib
+pydantic
+numpy
