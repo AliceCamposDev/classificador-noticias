@@ -6,6 +6,7 @@ import spacy
 from src.schemas import TextRequest, PredictionResponse
 from src.model import load_models, predict_text
 from fastapi.middleware.cors import CORSMiddleware
+import os
 
 # Configuração básica de logging
 logging.basicConfig(level=logging.INFO)
@@ -26,7 +27,8 @@ async def lifespan(app: FastAPI) -> Any:
     global tfidf_vectorizer, classifier_model
     logger.info("Carregando modelos...")
     global nlp
-    nlp = spacy.load('pt_core_news_sm')
+    model_path = os.path.join(os.path.dirname(__file__), 'models', 'pt_core_news_sm')
+    nlp = spacy.load(model_path)
     try:
         tfidf_vectorizer, classifier_model = load_models()
 
