@@ -73,13 +73,15 @@ app = FastAPI(
 )
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://classificador-noticias-front-git-main-alice-campos-projects.vercel.app","https://classificador-noticias-front-git-main-alice-campos-projects.vercel.app/*"],
+    allow_origin_regex=r"https://.*alice-campos-projects\.vercel\.app",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-
+@app.options("/{path:path}")
+async def options_handler():
+    return {}
 @app.get("/")
 async def root() -> Dict[str, str]:
     """Endpoint de saudação."""
