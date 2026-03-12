@@ -25,8 +25,8 @@ async def lifespan(app: FastAPI) -> Any:
     """
     global tfidf_vectorizer, classifier_model
     logger.info("Carregando modelos...")
-    # global nlp
-    # nlp = spacy.load('pt_core_news_sm')
+    global nlp
+    nlp = spacy.load('pt_core_news_sm')
     try:
         tfidf_vectorizer, classifier_model = load_models()
 
@@ -106,9 +106,9 @@ async def predict(request: TextRequest) -> PredictionResponse:
             detail="Modelos não disponíveis no momento. Tente novamente mais tarde.",
         )
     text = request.text
-    # doc = nlp(text)
-    # tokens = [token.lemma_ for token in doc if not token.is_stop and not token.is_punct]
-    # text = ' '.join(tokens)
+    doc = nlp(text)
+    tokens = [token.lemma_ for token in doc if not token.is_stop and not token.is_punct]
+    text = ' '.join(tokens)
 
     try:
         predicted_class, probabilities, _ = predict_text(
