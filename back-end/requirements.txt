@@ -4,3 +4,4 @@ joblib
 pydantic
 numpy
 scikit-learn
+spacy
