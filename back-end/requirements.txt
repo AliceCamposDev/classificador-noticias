@@ -3,4 +3,4 @@ fastapi
 joblib
 pydantic
 numpy
-sklearn
+scikit-learn
