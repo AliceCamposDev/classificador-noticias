@@ -5,4 +5,3 @@ pydantic
 numpy
 scikit-learn
 spacy
-mangum

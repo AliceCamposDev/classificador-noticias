@@ -152,5 +152,3 @@ async def predict(request: TextRequest) -> PredictionResponse:
             "tv",
         ],
     )
-
-handler = Mangum(app)
