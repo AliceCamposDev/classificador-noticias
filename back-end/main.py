@@ -6,7 +6,6 @@ import spacy
 from src.schemas import TextRequest, PredictionResponse
 from src.model import load_models, predict_text
 from fastapi.middleware.cors import CORSMiddleware
-from mangum import Mangum
 
 # Configuração básica de logging
 logging.basicConfig(level=logging.INFO)
