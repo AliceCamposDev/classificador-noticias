@@ -74,23 +74,12 @@ app = FastAPI(
 )
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["*","https://classificador-noticias-front-git-main-alice-campos-projects.vercel.app/","https://classificador-noticias-front-git-main-alice-campos-projects.vercel.app/*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-from fastapi.responses import JSONResponse
 
-@app.options("/classify")
-async def options_classify():
-    return JSONResponse(
-        content={},
-        headers={
-            "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Methods": "POST, OPTIONS",
-            "Access-Control-Allow-Headers": "*",
-        },
-    )
 
 @app.get("/")
 async def root() -> Dict[str, str]:
