@@ -50,7 +50,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 
     Carrega os modelos usados ao iniciar
     ps: o modelo pt_core_news_sm esta mockado no codigo porque a vercel não consegue carregar o modelo pelo tamanho direito
-    
+
     Args:
         app (FastAPI):Instancia da aplicação
 
@@ -109,7 +109,7 @@ async def root() -> Dict[str, str]:
         Dict[str, str]: mensagem
     """
     return {
-        "message": "API de Classificação de Texto. Use POST /predict para enviar seu texto\n/classnames para ver as possiveis respostas\n/docs para o swagger "
+        "message": "API de Classificação de Texto. Use POST /predict para enviar seu texto\n/classnames para ver as possiveis respostas\n/docs para o swagger"
     }
 
 
@@ -158,7 +158,10 @@ async def predict(request: TextRequest) -> PredictionResponse:
         )
     try:
         predicted_class, probabilities, _ = predict_text(
-            text=text, tfidf_vectorizer=tfidf_vectorizer, classifier=classifier_model, class_names=class_names
+            text=text,
+            tfidf_vectorizer=tfidf_vectorizer,
+            classifier=classifier_model,
+            class_names=class_names,
         )
     except Exception as e:
         logger.exception("Erro durante a predição")
@@ -173,6 +176,7 @@ async def predict(request: TextRequest) -> PredictionResponse:
         class_names=class_names,
     )
 
+
 @app.get("/classnames")
 async def get_classnames() -> list[str]:
     """Função para pegar as classificações possíveis
@@ -181,4 +185,3 @@ async def get_classnames() -> list[str]:
         List[str]: classnames
     """
     return class_names
-    
