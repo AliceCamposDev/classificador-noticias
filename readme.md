@@ -39,20 +39,20 @@ A API foi desenvolvida com **FastAPI** e está disponível em produção no ende
 
 1. Clone o repositório
 
-git clone https://github.com/AliceCamposDev/classificador-noticias
-cd classificador-noticias/back-end
+- git clone https://github.com/AliceCamposDev/classificador-noticias
+- cd classificador-noticias/back-end
 
 2. Instale as dependências
 
-pip install -r requirements.txt
+- pip install -r requirements.txt
 
 3. Execute a aplicação
 
-python -m uvicorn main:app --reload
+- python -m uvicorn main:app --reload
 
 🐳 Executando com Docker
 
-sudo docker compose up --build
+- sudo docker compose up --build
 
 ---
 
