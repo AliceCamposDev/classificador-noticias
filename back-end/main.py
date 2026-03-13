@@ -27,7 +27,7 @@ async def lifespan(app: FastAPI) -> Any:
     global tfidf_vectorizer, classifier_model
     logger.info("Carregando modelos...")
     global nlp
-    model_path = os.path.join(os.path.dirname(__file__), 'models', 'pt_core_news_sm-3.7.0-py3-none-any')
+    model_path = os.path.join(os.path.dirname(__file__), 'models', 'pt_core_news_sm', 'pt_core_news_sm','pt_core_news_sm-3.7.0')
     nlp = spacy.load(model_path)
     try:
         tfidf_vectorizer, classifier_model = load_models()
