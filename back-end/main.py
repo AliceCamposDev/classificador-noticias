@@ -31,33 +31,6 @@ async def lifespan(app: FastAPI) -> Any:
     nlp = spacy.load(model_path)
     try:
         tfidf_vectorizer, classifier_model = load_models()
-
-        CLASS_NAMES: List[str] = [
-            "ambiente",
-            "bbc",
-            "ciencia",
-            "colunas",
-            "comida",
-            "cotidiano",
-            "educacao",
-            "empreendedorsocial",
-            "equilibrioesaude",
-            "esporte",
-            "folhinha",
-            "ilustrada",
-            "ilustrissima",
-            "mercado",
-            "mundo",
-            "opiniao",
-            "paineldoleitor",
-            "poder",
-            "saopaulo",
-            "seminariosfolha",
-            "sobretudo",
-            "tec",
-            "turismo",
-            "tv",
-        ]
         logger.info("Modelos carregados com sucesso.")
     except Exception as e:
         logger.error(f"Erro ao carregar modelos: {e}")
@@ -80,10 +53,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-@app.options("/{full_path:path}")
-async def options_handler(full_path: str):
-    return Response(status_code=200)
 
 @app.get("/")
 async def root() -> Dict[str, str]:
