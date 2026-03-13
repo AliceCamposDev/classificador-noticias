@@ -26,13 +26,12 @@ def predict_text(
     """
     Recebe um texto e retorna a classe prevista e as probabilidades.
     """
-    # O vetorizador espera uma lista de strings (iterável)
     X = tfidf_vectorizer.transform([text])
 
-    pred: np.ndarray = classifier.predict(X)           # array de inteiros
-    proba: np.ndarray = classifier.predict_proba(X)    # array 2D
+    pred: np.ndarray = classifier.predict(X)
+    proba: np.ndarray = classifier.predict_proba(X)
 
     predicted_class = int(pred[0])
-    probabilities = proba[0].tolist()                  # converte para lista Python
+    probabilities = proba[0].tolist()
 
     return predicted_class, probabilities, class_names
