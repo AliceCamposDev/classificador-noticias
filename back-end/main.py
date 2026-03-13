@@ -109,7 +109,7 @@ async def root() -> Dict[str, str]:
         Dict[str, str]: mensagem
     """
     return {
-        "message": "API de Classificação de Texto. Use POST /predict para enviar seu texto"
+        "message": "API de Classificação de Texto. Use POST /predict para enviar seu texto\n/classnames para ver as possiveis respostas\n/docs para o swagger "
     }
 
 
