@@ -7,9 +7,10 @@ BASE_DIR = Path(__file__).parent.parent
 MODELS_DIR = BASE_DIR / "models"
 
 def load_models() -> Tuple[object, object]:
-    """
-    Carrega o vetorizador TF-IDF e o modelo de regressão logística.
-    Retorna uma tupla (vetorizador, modelo).
+    """Carrega os modelos tfidf e vectorizer
+
+    Returns:
+        Tuple[object, object]: both models
     """
     tfidf_path = MODELS_DIR / "tfidf_vectorizer.pkl"
     model_path = MODELS_DIR / "logistic_model.pkl"
@@ -21,11 +22,19 @@ def predict_text(
     text: str,
     tfidf_vectorizer: Any,
     classifier: Any,
-    class_names: Optional[List[str]] = None
+    class_names: Optional[List[str]],
 ) -> Tuple[int, List[float], Optional[List[str]]]:
-    """
-    Recebe um texto e retorna a classe prevista e as probabilidades.
-    """
+    """Função que usa os modelos para classificar os textos
+
+    Args:
+        text (str): texto a ser classificado
+        tfidf_vectorizer (Any): vetorizer
+        classifier (Any): modelo classificador
+        class_names (Optional[List[str]], optional): classes possiveis para classificação, nem precisa dele na real, mas ta ai
+
+    Returns:
+        Tuple[int, List[float], Optional[List[str]]]: classe predita, probabilidades de todas as classes, nome das classes possiveis
+    """    
     X = tfidf_vectorizer.transform([text])
 
     pred: np.ndarray = classifier.predict(X)
